@@ -13,8 +13,16 @@ var mongodb = require('mongodb').MongoClient;
 // Import Mongoose
 var mongoose = require('mongoose');
 // Regex for URL validation
-var urlRegex = /^((https?):\/\/)?([w|W]{3}\.)*[a-zA-Z0-9\-\.]{3,}\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
+var urlRegex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|www\.)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
 
+
+function makeShortenedURL() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (var i = 0; i < 5; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  return text;
+}
 
 
 // Set up default mongoose connection
@@ -56,12 +64,21 @@ app.get('/new/*', function(req, res) {
       if (err) return handleError(err);
       // If URL has already been shortened, inform user
       if (matchFound) {
-        res.send(shortened_url_to_create + ' shortened url is: ' + matchFound)
+        res.send(shortened_url_to_create + ' shortened url already exists: ' + JSON.stringify(matchFound.shortenedUrl))
       } else {
+        // Create a 5 random letter and number string for the shortened URL 
+        var randomString = makeShortenedURL();
+        // Check if randomString is already in use, if so, run once more
+        shortened_url_model.findOne({shortenedUrl: randomString}, function (err, matchFound) {
+          if (err) return handleError(err);
+          if (matchFound) {
+            randomString = makeShortenedURL();
+          }
+        })
         // Create new mongodb document for shortened URL 
-        var new_instance = new shortened_url_model({ fullUrl: shortened_url_to_create, shortenedUrl: 1234 });
+        var new_instance = new shortened_url_model({ fullUrl: shortened_url_to_create, shortenedUrl: randomString });
         console.log('New document created');
-        res.send(shortened_url_to_create + ' shortened url is: ' + matchFound)
+        res.send(shortened_url_to_create + ' has been shortened to: ' + randomString + '.<br/><br/> Copy this in to your browser\'s URL bar: ' + 'https://assorted-entrance.glitch.me/' + randomString)
         // Save the new model instance, passing a callback
         new_instance.save(function (err) {
         if (err) return err;
@@ -72,12 +89,13 @@ app.get('/new/*', function(req, res) {
   // If URL is invalid, inform user
   } else {
     console.log(shortened_url_to_create + ' is invalid')
-    res.send(shortened_url_to_create + ' is not a valid URL');
+    res.send(shortened_url_to_create + ' is not a valid URL. URLs must begin with http://, https://, or www. Example: https://assorted-entrance.glitch.me/new/http://google.com');
   }
 }); // close app.get
 
 
 
+// Template
 if (!process.env.DISABLE_XORIGIN) {
   app.use(function(req, res, next) {
     var allowedOrigins = ['https://narrow-plane.gomix.me', 'https://www.freecodecamp.com'];
@@ -106,6 +124,32 @@ app.route('/')
     .get(function(req, res) {
 		  res.sendFile(process.cwd() + '/views/index.html');
     })
+// Template 
+
+
+
+//
+// Redirect to shortened URL
+// Use 8e586 for google.com
+app.get('/*', function (req, res) {
+  
+  var shortenedUrlInput = req.params[0];
+  
+  shortened_url_model.findOne({ shortenedUrl: shortenedUrlInput }, function (err, matchFound) {
+    if (err) return handleError(err);
+    if (matchFound) {
+      console.log('redirecting to ' + matchFound.fullUrl);
+      res.redirect(matchFound.fullUrl);
+    } else {
+      res.send('Please enter a valid shortened URL. To create a new shortened URL, enter in to the URL: https://assorted-entrance.glitch.me/new/website-to-be-added.com');
+    }
+  })
+
+})
+
+
+
+
 
 // Respond not found to all the wrong routes
 app.use(function(req, res, next){
@@ -130,3 +174,5 @@ function handleError (err, req, res, next) {
 app.listen(process.env.PORT, function () {
   console.log('Node.js listening ...');
 });
+
+
