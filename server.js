@@ -66,7 +66,7 @@ app.get('/new/*', function(req, res) {
       if (err) return handleError(err);
       // If URL has already been shortened, inform user
       if (matchFound) {
-        res.send(JSON.stringify(matchFound) + '<br/><br/>A shortened URL for "' + shortened_url_to_create + '" already exists: ' + matchFound.shortenedUrl + '.<br/><br/> Copy this in to your browser\'s URL bar: ' + 'https://shorter-url.glitch.me/' + matchFound.shortenedUrl)
+        res.send(JSON.stringify(matchFound) + '<br/><br/>A shortened URL for "' + shortened_url_to_create + '" already exists: ' + matchFound.shortenedUrl + '.<br/><br/> Copy and paste this in to your browser\'s URL bar: ' + 'https://shorter-url.glitch.me/' + matchFound.shortenedUrl + '<br/><br/> or just ' + '<a href="' + 'https://shorter-url.glitch.me/' + matchFound.shortenedUrl + '">click here</a>')
       } else {
         // Create a 5 random letter and number string for the shortened URL 
         var randomString = makeShortenedURL();
@@ -84,7 +84,7 @@ app.get('/new/*', function(req, res) {
         var urlObj = { "fullUrl": shortened_url_to_create, "shortenedUrl": randomString}
         
         res.send( JSON.stringify(urlObj) + "<br/><br/>" + 
-          shortened_url_to_create + ' has been shortened to: ' + randomString + '.<br/><br/> Copy this in to your browser\'s URL bar: ' + 'https://shorter-url.glitch.me/' + randomString)
+          shortened_url_to_create + ' has been shortened to: ' + randomString + '.<br/><br/> Copy and paste this in to your browser\'s URL bar: ' + 'https://shorter-url.glitch.me/' + randomString + '<br/><br/> or just ' + '<a href="' + 'https://shorter-url.glitch.me/' + randomString + '">click here</a>')
         // Save the new model instance, passing a callback
         new_instance.save(function (err) {
         if (err) return err;
