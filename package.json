@@ -1,9 +1,10 @@
 {
   "name": "fcc-learn-npm-package-json",
   "dependencies": {
-    "express": "^4.14.0",
+    "express": "^4.16.2",
     "json-response": "0.0.2",
-    "mongodb": "^2.2.33"
+    "mongodb": "^2.2.33",
+    "mongoose": "4.13.0"
   },
   "main": "server.js",
   "scripts": {
@@ -14,6 +15,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://idontknow/todo.git"
+    "url": "https://github.com/jordanleo7/URL-Shortener"
   }
 }
